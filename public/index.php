@@ -26,11 +26,17 @@ $app->get('/random', function () use ($app) {
     $app->redirect('/' . $color->getHexColor(false));
 });
 
-$app->get('/image/random', function () use ($app) {
+$app->get('/image/random\.:ext', function ($extension) use ($app) {
     $color = Color::random_color();
 
+    $width = $app->request()->get('w', 500);
+    $height = $app->request()->get('h', 500);
+
+    $image = new Image($color, $width, $height, $extension);
+
     $app->response->header('cache-control', 'private, max-age=0, no-cache');
-    $app->redirect('/image/' . $color->getHexColor(false));
+    $app->response->header('Content-Type', $image->getContentType());
+    $app->response->setBody($image->getImage());
 });
 
 $app->get('/image/:hexColor\.:ext', function ($hexColor, $extension) use ($app) {
