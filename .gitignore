@@ -1,0 +1,10 @@
+/cache/*
+
+# Dependencies
+/vendor
+
+# Mac
+.DS_Store
+
+#PHP Storm
+.idea
