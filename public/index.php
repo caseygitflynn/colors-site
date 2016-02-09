@@ -37,9 +37,7 @@ $app->get('/random', function () use ($app) {
 
     $color = random_color();
 
-    $app->redirect('/' . $color, 301);
-
-    //$app->render('color.twig', compact('page'));
+    $app->redirect('/' . $color);
 });
 
 $app->get('/:color', function ($color) use ($app) {
