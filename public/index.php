@@ -1,22 +1,9 @@
 <?php
 
+use Color\Color;
+use Color\Image;
+
 require dirname(__DIR__) . '/vendor/autoload.php';
-
-function random_color_part() {
-    return str_pad( dechex( mt_rand( 0, 255 ) ), 2, '0', STR_PAD_LEFT);
-}
-
-function random_color() {
-    return random_color_part() . random_color_part() . random_color_part();
-}
-
-function getContrastYIQ($hexcolor){
-    $r = hexdec(substr($hexcolor,0,2));
-    $g = hexdec(substr($hexcolor,2,2));
-    $b = hexdec(substr($hexcolor,4,2));
-    $yiq = (($r*299)+($g*587)+($b*114))/1000;
-    return ($yiq >= 128) ? 'black' : 'white';
-}
 
 $app = new Slim\Slim([
     'view' => new \Slim\Views\Twig(),
@@ -33,25 +20,56 @@ $app->view()->parserOptions = [
 ];
 
 $app->get('/random', function () use ($app) {
-    $page = [];
+    $color = Color::random_color();
 
-    $color = random_color();
-
-    $app->redirect('/' . $color);
+    $app->response->header('cache-control', 'private, max-age=0, no-cache');
+    $app->redirect('/' . $color->getHexColor(false));
 });
 
-$app->get('/:color', function ($color) use ($app) {
+$app->get('/image/random', function () use ($app) {
+    $color = Color::random_color();
+
+    $app->response->header('cache-control', 'private, max-age=0, no-cache');
+    $app->redirect('/image/' . $color->getHexColor(false));
+});
+
+$app->get('/image/:hexColor\.:ext', function ($hexColor, $extension) use ($app) {
+
+    try {
+        $color = new Color($hexColor);
+        $width = $app->request()->get('w', 500);
+        $height = $app->request()->get('h', 500);
+
+        $image = new Image($color, $width, $height, $extension);
+
+        $app->response->header('Content-Type', $image->getContentType());
+        $app->response->setBody($image->getImage());
+
+    } catch (InvalidArgumentException $e) {
+        $color = Color::random_color();
+        $page["title"] = $e->getMessage();
+        $page["color"] = $color->getHexColor();
+        $page["text_color"] = $color->getContrastColor()->getHexColor();
+
+        $app->response->setStatus(404);
+
+        $app->render('color.twig', compact('page'));
+    }
+});
+
+$app->get('/:hexColor', function ($hexColor) use ($app) {
     $page = [];
 
-    if (preg_match("/([a-fA-F0-9]{3}){1,2}\b/", $color)) {
-        $page["title"] = "#" . $color;
-        $page["color"] = "#" . $color;
-        $page["text_color"] = getContrastYIQ($color);
-    } else {
-        $randomColor = random_color();
-        $page["title"] = "Invalid color #" . $color;
-        $page["color"] = "#" . $randomColor;
-        $page["text_color"] = getContrastYIQ($randomColor);
+    try {
+        $color = new Color($hexColor);
+        $page["title"] = $color->getHexColor();
+        $page["color"] = $color->getHexColor();
+        $page["text_color"] = $color->getContrastColor()->getHexColor();
+    } catch (InvalidArgumentException $e) {
+        $color = Color::random_color();
+        $page["title"] = $e->getMessage();
+        $page["color"] = $color->getHexColor();
+        $page["text_color"] = $color->getContrastColor()->getHexColor();
 
         $app->response->setStatus(404);
     }
