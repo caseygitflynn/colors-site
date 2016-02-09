@@ -49,8 +49,6 @@ $app->get('/:color', function ($color) use ($app) {
         $page["title"] = "#" . $color;
         $page["color"] = "#" . $color;
         $page["text_color"] = getContrastYIQ($color);
-
-        $app->render('color.twig', compact('page'));
     } else {
         $randomColor = random_color();
         $page["title"] = "Invalid color #" . $color;
