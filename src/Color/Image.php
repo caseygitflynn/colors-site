@@ -13,7 +13,7 @@ class Image
 
     protected $text;
 
-    protected $extension;
+    protected $adaptor;
 
     protected $image;
 
@@ -36,7 +36,8 @@ class Image
         if (!in_array($extension, $this::$extensions)) {
             throw new \InvalidArgumentException("Invalid image type " . $extension);
         } else {
-            $this->extension = $extension;
+            $adaptor = '\\Color\\Adaptor\\' . ucwords($extension);
+            $this->adaptor = new $adaptor;
         }
     }
 
@@ -50,40 +51,12 @@ class Image
 
         $this->setText($this->text, $this->color->getContrastColor());
 
-        ob_start();
-
-        if ($this->extension == "jpg" || $this->extension == "jpeg") {
-            imagejpeg($this->image, null, 90);
-        }
-        if ($this->extension == "png") {
-            imagepng($this->image);
-        }
-
-        if ($this->extension == "gif") {
-            imagegif($this->image);
-        }
-
-        $imagedata = ob_get_contents();
-        ob_end_clean();
-
-        return $imagedata;
+        return $this->adaptor->getImageData($this->image);
     }
 
     public function getContentType()
     {
-        if ($this->extension == "jpg" || $this->extension == "jpeg") {
-            return "image/jpeg";
-        }
-
-        if ($this->extension == "png") {
-            return "image/png";
-        }
-
-        if ($this->extension == "gif") {
-            return "image/gif";
-        }
-
-        return null;
+        return $this->adaptor->getContentType();
     }
 
     protected function setText($text = "", Color $color)
