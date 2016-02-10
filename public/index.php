@@ -22,14 +22,19 @@ $app->view()->parserOptions = [
 $app->get('/image/random\.:ext', function ($extension) use ($app) {
     $color = Color::random_color();
 
-    $width = $app->request()->get('w', 500);
-    $height = $app->request()->get('h', 500);
+    try {
+        $width = $app->request()->get('w', 500);
+        $height = $app->request()->get('h', 500);
+        $text = $app->request()->get('t', $color->getHexColor());
+        $image = new Image($color, $width, $height, $text, $extension);
 
-    $image = new Image($color, $width, $height, $extension);
+        $app->response->header('Content-Type', $image->getContentType());
+        $app->response->setBody($image->getImage());
 
-    $app->response->header('cache-control', 'private, max-age=0, no-cache');
-    $app->response->header('Content-Type', $image->getContentType());
-    $app->response->setBody($image->getImage());
+    } catch (InvalidArgumentException $e) {
+        $app->response->setStatus(400);
+        $app->response->setBody($e->getMessage());
+    }
 });
 
 $app->get('/image/:hexColor\.:ext', function ($hexColor, $extension) use ($app) {
@@ -38,14 +43,14 @@ $app->get('/image/:hexColor\.:ext', function ($hexColor, $extension) use ($app) 
         $color = new Color($hexColor);
         $width = $app->request()->get('w', 500);
         $height = $app->request()->get('h', 500);
-
-        $image = new Image($color, $width, $height, $extension);
+        $text = $app->request()->get('t', $color->getHexColor());
+        $image = new Image($color, $width, $height, $text, $extension);
 
         $app->response->header('Content-Type', $image->getContentType());
         $app->response->setBody($image->getImage());
 
     } catch (InvalidArgumentException $e) {
-        $app->response->setStatus(404);
+        $app->response->setStatus(400);
         $app->response->setBody($e->getMessage());
     }
 });

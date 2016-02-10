@@ -11,23 +11,33 @@ class Image
 
     protected $height;
 
+    protected $text;
+
     protected $extension;
 
     protected $image;
+
+    protected static $extensions = ["jpg", "jpeg", "png", "gif"];
 
     /**
      * Image constructor.
      * @param Color $color
      * @param int $width
      * @param int $height
+     * @param string $text
      * @param string $extension
      */
-    public function __construct(Color $color, $width = 500, $height = 500, $extension = "jpg")
+    public function __construct(Color $color, $width = 500, $height = 500, $text = "", $extension = "jpg")
     {
         $this->color = $color;
         $this->width = $width;
         $this->height = $height;
-        $this->extension = $extension;
+        $this->text = strtoupper($text);
+        if (!in_array($extension, $this::$extensions)) {
+            throw new \InvalidArgumentException("Invalid image type " . $extension);
+        } else {
+            $this->extension = $extension;
+        }
     }
 
     public function getImage()
@@ -38,7 +48,7 @@ class Image
         $fillColor = imagecolorallocate($this->image, $fillRGB["r"], $fillRGB["g"], $fillRGB["b"]);
         imagefill($this->image, 0, 0, $fillColor);
 
-        $this->setText($this->color->getHexColor(), $this->color->getContrastColor());
+        $this->setText($this->text, $this->color->getContrastColor());
 
         ob_start();
 
@@ -80,7 +90,7 @@ class Image
     {
         $textRGB = $color->getRGB();
         $textColor = imagecolorallocate($this->image, $textRGB["r"], $textRGB["g"], $textRGB["b"]);
-        $fontSize = min($this->width, $this->height) / strlen($text) / 1.5;
+        $fontSize = $this->width / strlen($text) / 1.5;
         $xPos = $this->width / 2 - ($fontSize * strlen($text) / 2);
         $yPos = $fontSize / 2 + $this->height / 2;
         imagettftext($this->image, $fontSize, 0, $xPos, $yPos, $textColor, $this->font(), $text);
