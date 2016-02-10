@@ -17,8 +17,6 @@ class Image
 
     protected $image;
 
-    protected static $extensions = ["jpg", "jpeg", "png", "gif"];
-
     /**
      * Image constructor.
      * @param Color $color
@@ -33,10 +31,10 @@ class Image
         $this->width = $width;
         $this->height = $height;
         $this->text = strtoupper($text);
-        if (!in_array($extension, $this::$extensions)) {
+        $adaptor = '\\Color\\Adaptor\\' . ucwords($extension);
+        if (!class_exists($adaptor)) {
             throw new \InvalidArgumentException("Invalid image type " . $extension);
         } else {
-            $adaptor = '\\Color\\Adaptor\\' . ucwords($extension);
             $this->adaptor = new $adaptor;
         }
     }
