@@ -19,13 +19,6 @@ $app->view()->parserOptions = [
     'cache' => dirname(__DIR__) . '/cache'
 ];
 
-$app->get('/random', function () use ($app) {
-    $color = Color::random_color();
-
-    $app->response->header('cache-control', 'private, max-age=0, no-cache');
-    $app->redirect('/' . $color->getHexColor(false));
-});
-
 $app->get('/image/random\.:ext', function ($extension) use ($app) {
     $color = Color::random_color();
 
@@ -52,35 +45,9 @@ $app->get('/image/:hexColor\.:ext', function ($hexColor, $extension) use ($app) 
         $app->response->setBody($image->getImage());
 
     } catch (InvalidArgumentException $e) {
-        $color = Color::random_color();
-        $page["title"] = $e->getMessage();
-        $page["color"] = $color->getHexColor();
-        $page["text_color"] = $color->getContrastColor()->getHexColor();
-
         $app->response->setStatus(404);
-
-        $app->render('color.twig', compact('page'));
+        $app->response->setBody($e->getMessage());
     }
-});
-
-$app->get('/:hexColor', function ($hexColor) use ($app) {
-    $page = [];
-
-    try {
-        $color = new Color($hexColor);
-        $page["title"] = $color->getHexColor();
-        $page["color"] = $color->getHexColor();
-        $page["text_color"] = $color->getContrastColor()->getHexColor();
-    } catch (InvalidArgumentException $e) {
-        $color = Color::random_color();
-        $page["title"] = $e->getMessage();
-        $page["color"] = $color->getHexColor();
-        $page["text_color"] = $color->getContrastColor()->getHexColor();
-
-        $app->response->setStatus(404);
-    }
-
-    $app->render('color.twig', compact('page'));
 });
 
 $app->run();

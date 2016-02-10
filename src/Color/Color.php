@@ -41,9 +41,9 @@ class Color
     public function getHexColor($withHash = true)
     {
         if ($withHash) {
-            return "#" . $this->hexColor;
+            return "#" . strtoupper($this->hexColor);
         } else {
-            return $this->hexColor;
+            return strtoupper($this->hexColor);
         }
     }
 
@@ -55,7 +55,7 @@ class Color
         if (preg_match("/([a-fA-F0-9]{3}){1,2}\b/", $hexColor)) {
             $this->hexColor = $hexColor;
         } else {
-            throw new \InvalidArgumentException("Invalid color #" . $hexColor);
+            throw new \InvalidArgumentException("Invalid hex color #" . $hexColor);
         }
     }
 

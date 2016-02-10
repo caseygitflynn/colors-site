@@ -1,6 +1,8 @@
 <?php
 namespace Color;
 
+use Slim\Slim;
+
 class Image
 {
     protected $color;
@@ -31,18 +33,24 @@ class Image
     public function getImage()
     {
         $this->image = imagecreatetruecolor($this->width, $this->height);
-        $rgb = $this->color->getRGB();
+        $fillRGB = $this->color->getRGB();
 
-        $fillColor = imagecolorallocate($this->image, $rgb["r"], $rgb["g"], $rgb["b"]);
+        $fillColor = imagecolorallocate($this->image, $fillRGB["r"], $fillRGB["g"], $fillRGB["b"]);
         imagefill($this->image, 0, 0, $fillColor);
+
+        $this->setText($this->color->getHexColor(), $this->color->getContrastColor());
 
         ob_start();
 
         if ($this->extension == "jpg" || $this->extension == "jpeg") {
-            imagejpeg($this->image);
+            imagejpeg($this->image, null, 90);
         }
         if ($this->extension == "png") {
             imagepng($this->image);
+        }
+
+        if ($this->extension == "gif") {
+            imagegif($this->image);
         }
 
         $imagedata = ob_get_contents();
@@ -61,6 +69,28 @@ class Image
             return "image/png";
         }
 
+        if ($this->extension == "gif") {
+            return "image/gif";
+        }
+
         return null;
+    }
+
+    protected function setText($text = "", Color $color)
+    {
+        $textRGB = $color->getRGB();
+        $textColor = imagecolorallocate($this->image, $textRGB["r"], $textRGB["g"], $textRGB["b"]);
+        $fontSize = min($this->width, $this->height) / strlen($text) / 1.5;
+        $xPos = $this->width / 2 - ($fontSize * strlen($text) / 2);
+        $yPos = $fontSize / 2 + $this->height / 2;
+        imagettftext($this->image, $fontSize, 0, $xPos, $yPos, $textColor, $this->font(), $text);
+    }
+
+    protected function font()
+    {
+        $root = Slim::getInstance('default')->root();
+        $path = $root . 'webfonts/Monaco.ttf';
+
+        return $path;
     }
 }
