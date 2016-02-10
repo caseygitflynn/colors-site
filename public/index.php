@@ -37,6 +37,10 @@ $app->get('/image/random\.:ext', function ($extension) use ($app) {
     }
 });
 
+$app->get('/test', function ($extension) use ($app) {
+    die('test');
+});
+
 $app->get('/image/:hexColor\.:ext', function ($hexColor, $extension) use ($app) {
 
     try {
