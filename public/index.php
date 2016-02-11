@@ -1,9 +1,9 @@
 <?php
 
-use Color\Color;
-use Color\Image;
-
 require dirname(__DIR__) . '/vendor/autoload.php';
+
+use Color\Color;
+use Image\Image;
 
 $app = new Slim\Slim([
     'view' => new \Slim\Views\Twig(),
@@ -19,39 +19,36 @@ $app->view()->parserOptions = [
     'cache' => dirname(__DIR__) . '/cache'
 ];
 
-$app->get('/image/random\.:ext', function ($extension) use ($app) {
-    $color = Color::random_color();
+$app->get('/:hexColor\-:dimensions\.:ext', function ($hexColor, $dimensions, $extension) use ($app) {
+    $dimensions = explode('x', $dimensions);
 
-    try {
-        $width = $app->request()->get('w', 500);
-        $height = $app->request()->get('h', 500);
-        $text = $app->request()->get('t', $color->getHexColor());
-        $image = new Image($color, $width, $height, $text, $extension);
-
-        $app->response->header('Content-Type', $image->getContentType());
-        $app->response->setBody($image->getImage());
-
-    } catch (InvalidArgumentException $e) {
-        $app->response->setStatus(400);
-        $app->response->setBody($e->getMessage());
+    if (count($dimensions) == 0) {
+        $width = 500;
+        $height = 500;
     }
-});
 
-$app->get('/image/:hexColor\.:ext', function ($hexColor, $extension) use ($app) {
+    if (count($dimensions) == 1) {
+        $width = $dimensions[0];
+        $height = $width;
+    }
+
+    if (count($dimensions) == 2)
+    {
+        $width = $dimensions[0];
+        $height = $dimensions[1];
+    }
 
     try {
-        $color = new Color($hexColor);
-        $width = $app->request()->get('w', 500);
-        $height = $app->request()->get('h', 500);
-        $text = $app->request()->get('t', $color->getHexColor());
-        $image = new Image($color, $width, $height, $text, $extension);
+        $color = strtolower($hexColor) == 'random' ? Color::random_color() : new Color($hexColor);
+        $image = new Image($color, $width, $height, $width . 'x' . $height, $extension);
 
         $app->response->header('Content-Type', $image->getContentType());
         $app->response->setBody($image->getImage());
 
-    } catch (InvalidArgumentException $e) {
-        $app->response->setStatus(400);
-        $app->response->setBody($e->getMessage());
+    } catch (Exception $e) {
+        $image = new Image(new Color("CCC"), 500, 500, $e->getMessage(), "png");
+        $app->response->header('Content-Type', $image->getContentType());
+        $app->response->setBody($image->getImage());
     }
 });
 
