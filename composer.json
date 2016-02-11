@@ -6,7 +6,8 @@
     },
     "autoload": {
         "psr-0": {
-            "Color": "src"
+            "Color": "src",
+            "Image": "src"
         }
     }
 }
