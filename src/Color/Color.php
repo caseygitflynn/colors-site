@@ -52,7 +52,11 @@ class Color
      */
     public function setHexColor($hexColor)
     {
-        if (preg_match("/([a-fA-F0-9]{3}){1,2}\b/", $hexColor)) {
+        if (preg_match("/^([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/", $hexColor)) {
+            if (strlen($hexColor) == 3) {
+                // Support for 3 character hex color
+                $hexColor = substr($hexColor,0,1) . substr($hexColor,0,1) . substr($hexColor,1,1) . substr($hexColor,1,1) . substr($hexColor,2,1) . substr($hexColor,2,1);
+            }
             $this->hexColor = $hexColor;
         } else {
             throw new \InvalidArgumentException("Invalid hex color #" . $hexColor);

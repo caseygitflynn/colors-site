@@ -1,6 +1,6 @@
 <?php
 
-namespace Color\Adaptor;
+namespace Image\Adaptor;
 
 class Jpeg implements ImageAdaptor
 {
@@ -12,11 +12,6 @@ class Jpeg implements ImageAdaptor
 
     public function getImageData($image)
     {
-        ob_start();
         imagejpeg($image, null, 90);
-        $imagedata = ob_get_contents();
-        ob_end_clean();
-
-        return $imagedata;
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Color\Adaptor;
+namespace Image\Adaptor;
 
 class Gif implements ImageAdaptor
 {
@@ -11,11 +11,6 @@ class Gif implements ImageAdaptor
 
     public function getImageData($image)
     {
-        ob_start();
         imagegif($image);
-        $imagedata = ob_get_contents();
-        ob_end_clean();
-
-        return $imagedata;
     }
 }

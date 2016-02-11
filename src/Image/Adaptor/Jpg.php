@@ -1,6 +1,6 @@
 <?php
 
-namespace Color\Adaptor;
+namespace Image\Adaptor;
 
 class Jpg extends Jpeg
 {

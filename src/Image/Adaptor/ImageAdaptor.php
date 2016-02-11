@@ -6,7 +6,7 @@
  * Time: 5:58 PM
  */
 
-namespace Color\Adaptor;
+namespace Image\Adaptor;
 
 interface ImageAdaptor
 {

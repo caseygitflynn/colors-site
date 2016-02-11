@@ -1,6 +1,6 @@
 <?php
 
-namespace Color\Adaptor;
+namespace Image\Adaptor;
 
 class Png implements ImageAdaptor
 {
@@ -12,11 +12,6 @@ class Png implements ImageAdaptor
 
     public function getImageData($image)
     {
-        ob_start();
         imagepng($image);
-        $imagedata = ob_get_contents();
-        ob_end_clean();
-
-        return $imagedata;
     }
 }

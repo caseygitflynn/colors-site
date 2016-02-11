@@ -1,7 +1,8 @@
 <?php
-namespace Color;
 
-use Slim\Slim;
+namespace Image;
+
+use Color\Color;
 
 class Image
 {
@@ -30,12 +31,12 @@ class Image
         $this->color = $color;
         $this->width = $width;
         $this->height = $height;
-        $this->text = strtoupper($text);
-        $adaptor = '\\Color\\Adaptor\\' . ucwords($extension);
+        $this->text = $text;
+        $adaptor = __NAMESPACE__ . '\\Adaptor\\' . ucwords($extension);
         if (!class_exists($adaptor)) {
             throw new \InvalidArgumentException("Invalid image type " . $extension);
         } else {
-            $this->adaptor = new $adaptor;
+            $this->adaptor = new $adaptor();
         }
     }
 
@@ -49,7 +50,17 @@ class Image
 
         $this->setText($this->text, $this->color->getContrastColor());
 
-        return $this->adaptor->getImageData($this->image);
+        return $this->getImageData($this->image);
+    }
+
+    protected function getImageData($image)
+    {
+        ob_start();
+        $this->adaptor->getImageData($image);
+        $imagedata = ob_get_contents();
+        ob_end_clean();
+
+        return $imagedata;
     }
 
     public function getContentType()
@@ -61,16 +72,32 @@ class Image
     {
         $textRGB = $color->getRGB();
         $textColor = imagecolorallocate($this->image, $textRGB["r"], $textRGB["g"], $textRGB["b"]);
-        $fontSize = $this->width / strlen($text) / 1.5;
-        $xPos = $this->width / 2 - ($fontSize * strlen($text) / 2);
-        $yPos = $fontSize / 2 + $this->height / 2;
+
+        $fontSize = $this->estimateFontSize($text);
+
+        $boundingBox = imageftbbox($fontSize, 0, $this->font(), $text);
+        $textWidth = $boundingBox[2] - $boundingBox[0];
+        $textHeight = $boundingBox[7] - $boundingBox[1];
+
+        $xPos = ($this->width / 2) - ($textWidth / 2);
+        $yPos = ($this->height / 2) - ($textHeight / 2);
+
         imagettftext($this->image, $fontSize, 0, $xPos, $yPos, $textColor, $this->font(), $text);
+    }
+
+    protected function estimateFontSize($text)
+    {
+        $boundingBox = imageftbbox(20, 0, $this->font(), $text);
+        $textWidth = $boundingBox[2] - $boundingBox[0];
+        $scale = ($this->width * 0.75) / $textWidth;
+
+        return 20 * $scale;
     }
 
     protected function font()
     {
-        $root = Slim::getInstance('default')->root();
-        $path = $root . 'webfonts/Monaco.ttf';
+        $rc = new \ReflectionClass(get_class($this));
+        $path = dirname($rc->getFileName()) . '/Monaco.ttf';
 
         return $path;
     }
